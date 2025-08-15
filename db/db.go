@@ -1,6 +1,7 @@
 package db
 
 import (
+	"log"
 	"fmt"
 	"context"
 	"net/http"
@@ -20,7 +21,7 @@ func WithDB(cd ConnectionDetails, handler func(w http.ResponseWriter, r *http.Re
 		url := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", cd.User, cd.Password, cd.ServerIP, cd.Port, cd.Schema)
 		conn, err := pgx.Connect(context.Background(), url)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
