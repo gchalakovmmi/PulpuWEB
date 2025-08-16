@@ -72,7 +72,7 @@ func (ga *GoogleAuth) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ga *GoogleAuth) GetSession(r *http.Request) (*Session, error) {
-	cookie, err := r.Cookie("pulpu_session")
+	cookie, err := r.Cookie("auth_session")
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (ga *GoogleAuth) StoreSession(w http.ResponseWriter, user goth.User) error 
 	encodedSig := base64.URLEncoding.EncodeToString(signature)
 
 	cookie := &http.Cookie{
-		Name:     "pulpu_session",
+		Name:     "auth_session",
 		Value:    fmt.Sprintf("%s.%s", encodedData, encodedSig),
 		Path:     "/",
 		Expires:  session.ExpiresAt,
@@ -139,7 +139,7 @@ func (ga *GoogleAuth) StoreSession(w http.ResponseWriter, user goth.User) error 
 
 func (ga *GoogleAuth) ClearSession(w http.ResponseWriter) {
 	cookie := &http.Cookie{
-		Name:     "pulpu_session",
+		Name:     "auth_session",
 		Value:    "",
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
