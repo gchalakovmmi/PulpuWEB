@@ -13,8 +13,8 @@ import(
     "github.com/jackc/pgx/v5"
 )
 
-func main() {
-    // Get connection details from environment variables
+// Get connection details from environment variables
+func getDBConnectionDetails(){
 	dbConnectionDetails := db.ConnectionDetails{
 		User: 		os.Getenv("POSTGRES_USER"),
 		Password:	os.Getenv("POSTGRES_PASSWORD"),
@@ -26,7 +26,10 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("Invalid POSTGRES_PORT: %v", err))
 	}
+}
 
+func main() {
+	dbConnectionDetails := getDBConnectionDetails()
     // Define endpoint
 	http.HandleFunc("/dbtest", db.WithDB(dbConnectionDetails, func(w http.ResponseWriter, r *http.Request, conn *pgx.Conn){
         ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
