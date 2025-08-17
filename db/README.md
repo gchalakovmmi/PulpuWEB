@@ -26,6 +26,7 @@ func getDBConnectionDetails(){
 	if err != nil {
 		panic(fmt.Sprintf("Invalid POSTGRES_PORT: %v", err))
 	}
+    return dbConnectionDetails
 }
 
 func main() {
