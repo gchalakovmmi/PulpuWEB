@@ -214,12 +214,14 @@ func GetGoogleAuthConfig() (*Config, error) {
 }
 
 func (ga *GoogleAuth) WithGoogleAuth(handler http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := ga.GetSession(r)
-		if err != nil {
-			http.Redirect(w, r, "/auth/google", http.StatusTemporaryRedirect)
-			return
+		return func(w http.ResponseWriter, r *http.Request) {
+				session, err := ga.GetSession(r)
+				if err != nil {
+						http.Redirect(w, r, "/auth/google", http.StatusTemporaryRedirect)
+						return
+				}
+				// Add session to request context
+				ctx := context.WithValue(r.Context(), "user_session", session)
+				handler(w, r.WithContext(ctx))
 		}
-		handler(w, r)
-	}
 }

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"io"
 	"context"
-	"time"
 
 	"github.com/a-h/templ"
 	"github.com/gchalakovmmi/PulpuWEB/auth"
@@ -69,41 +68,42 @@ func main() {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	})
 
-	// Protected route handler
 	protectedHandler := func(w http.ResponseWriter, r *http.Request) {
-		session, err := googleAuth.GetSession(r)
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+			// Get session from context
+			session, ok := r.Context().Value("user_session").(*auth.Session)
+			if !ok {
+					http.Error(w, "Session invalid", http.StatusUnauthorized)
+					return
+			}
 
-		// Render protected content
-		comp := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+			// Render all user details
 			user := session.User
-			_, err := io.WriteString(w, `
-        <html>
-        <head><title>Protected Page</title></head>
-        <body>
-            <h1>User Information</h1>
-            <p>Name: `+user.Name+`</p>
-            <p>Email: `+user.Email+`</p>
-            <p>NickName: `+user.NickName+`</p>
-            <p>Location: `+user.Location+`</p>
-            <p>AvatarURL: `+user.AvatarURL+`</p>
-            <p>Description: `+user.Description+`</p>
-            <p>UserID: `+user.UserID+`</p>
-            <p>AccessToken: `+user.AccessToken+`</p>
-            <p>AccessTokenSecret: `+user.AccessTokenSecret+`</p>
-            <p>RefreshToken: `+user.RefreshToken+`</p>
-            <p>ExpiresAt: `+user.ExpiresAt.Format(time.RFC3339)+`</p>
-            <p><img src="`+user.AvatarURL+`" width="100" referrerpolicy="no-referrer"></p>
-            <a href="/logout/google">Logout</a>
-        </body>
-        </html>`)
-			return err
+			comp := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+				_, err := io.WriteString(w, `
+<html>
+<head><title>User Info</title></head>
+<body>
+	<img src="`+user.AvatarURL+`" width="80">
+	<pre>
+Name:          `+user.Name+`
+Email:         `+user.Email+`
+NickName:      `+user.NickName+`
+Location:      `+user.Location+`
+Description:   `+user.Description+`
+UserID:        `+user.UserID+`
+Provider:      `+user.Provider+`
+AccessToken:   `+user.AccessToken+`
+RefreshToken:  `+user.RefreshToken+`
+ExpiresAt:     `+user.ExpiresAt.Format("2006-01-02 15:04")+`
+RawData:       `+fmt.Sprint(user.RawData)+`
+	</pre>
+	<a href="/logout/google">Logout</a>
+</body>
+</html>`)
+				return err
 		})
 
-		templ.Handler(comp).ServeHTTP(w, r)
+			templ.Handler(comp).ServeHTTP(w, r)
 	}
 
 	// Apply auth middleware to protected route
