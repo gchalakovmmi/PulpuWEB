@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"os"
 	"context"
 	"crypto/hmac"
 	"crypto/rand"
@@ -168,4 +169,58 @@ func GenerateSecretKey() ([]byte, error) {
 		return nil, err
 	}
 	return key, nil
+}
+
+
+func GetGoogleAuthConfig() (*Config, error) {
+	// Required environment variables
+	googleKey := os.Getenv("GOOGLE_KEY")
+	if googleKey == "" {
+		return nil, errors.New("GOOGLE_KEY environment variable not set")
+	}
+
+	googleSecret := os.Getenv("GOOGLE_SECRET")
+	if googleSecret == "" {
+		return nil, errors.New("GOOGLE_SECRET environment variable not set")
+	}
+
+	domain := os.Getenv("DOMAIN")
+	if domain == "" {
+		return nil, errors.New("DOMAIN environment variable not set")
+	}
+
+	sessionSecret := os.Getenv("SESSION_SECRET")
+	if sessionSecret == "" {
+		return nil, errors.New("SESSION_SECRET environment variable not set")
+	}
+
+	// Optional with default
+	sessionDuration := 24 * time.Hour
+	if durStr := os.Getenv("SESSION_DURATION"); durStr != "" {
+		duration, err := time.ParseDuration(durStr)
+		if err != nil {
+			return nil, errors.New("invalid SESSION_DURATION format")
+		}
+		sessionDuration = duration
+	}
+
+	return &Config{
+		GoogleKey:       googleKey,
+		GoogleSecret:    googleSecret,
+		CallbackURL:     "http://" + domain + "/auth/google/callback",
+		SecretKey:       []byte(sessionSecret),
+		SessionDuration: sessionDuration,
+	}, nil
+}
+
+func WithGoogleAuth(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, err := googleAuth.GetSession(r)
+		if err != nil {
+			http.Redirect(w, r, "/auth/google", http.StatusTemporaryRedirect)
+			return
+		}
+		// Authentication succeeded; call the main handler.
+		handler(w, r)
+	}
 }
