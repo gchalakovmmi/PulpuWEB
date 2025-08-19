@@ -225,3 +225,16 @@ func (ga *GoogleAuth) WithGoogleAuth(handler http.HandlerFunc) http.HandlerFunc 
 				handler(w, r.WithContext(ctx))
 		}
 }
+
+func (ga *GoogleAuth) WithOutGoogleAuth(redirectEndpoint string, handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, err := ga.GetSession(r)
+		if err == nil && session != nil {
+			// User is logged in, redirect them
+			http.Redirect(w, r, redirectEndpoint, http.StatusTemporaryRedirect)
+			return
+		}
+		// User is not logged in, continue with the handler
+		handler(w, r)
+	}
+}

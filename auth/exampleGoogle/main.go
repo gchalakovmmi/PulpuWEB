@@ -22,19 +22,19 @@ func main() {
 	googleAuth := auth.NewGoogleAuth(authConfig)
 
 	// Root handler - shows login link
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, err := io.WriteString(w, `
-		<html>
-		<head><title>Login</title></head>
-		<body>
-			<h1>Welcome!</h1>
-			<a href="/auth/google">Login with Google</a>
-		</body>
-		</html>`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
+	http.HandleFunc("/", googleAuth.WithOutGoogleAuth("/protected", func(w http.ResponseWriter, r *http.Request) {
+    _, err := io.WriteString(w, `                                                                                                                                                               
+    <html>                                                                                                                                                                                      
+    <head><title>Login</title></head>                                                                                                                                                           
+    <body>                                                                                                                                                                                      
+      <h1>Welcome!</h1>                                                                                                                                                                         
+      <a href="/auth/google">Login with Google</a>                                                                                                                                              
+    </body>                                                                                                                                                                                     
+    </html>`)                                                                                                                                                                                   
+    if err != nil {                                                                                                                                                                             
+      http.Error(w, err.Error(), http.StatusInternalServerError)                                                                                                                                
+    }                                                                                                                                                                                           
+	}))
 
 	// Start Google authentication flow
 	http.HandleFunc("/auth/google", func(w http.ResponseWriter, r *http.Request) {
