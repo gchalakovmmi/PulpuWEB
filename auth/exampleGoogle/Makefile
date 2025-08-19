@@ -1,5 +1,5 @@
 BINARY := exampleGoogle
-.PHONY: clear run
+.PHONY: clear run test
 
 clear:
 	@clear
