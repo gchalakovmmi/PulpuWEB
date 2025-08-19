@@ -23,17 +23,17 @@ func main() {
 
 	// Root handler - shows login link
 	http.HandleFunc("/", googleAuth.WithOutGoogleAuth("/protected", func(w http.ResponseWriter, r *http.Request) {
-    _, err := io.WriteString(w, `                                                                                                                                                               
-    <html>                                                                                                                                                                                      
-    <head><title>Login</title></head>                                                                                                                                                           
-    <body>                                                                                                                                                                                      
-      <h1>Welcome!</h1>                                                                                                                                                                         
-      <a href="/auth/google">Login with Google</a>                                                                                                                                              
-    </body>                                                                                                                                                                                     
-    </html>`)                                                                                                                                                                                   
-    if err != nil {                                                                                                                                                                             
-      http.Error(w, err.Error(), http.StatusInternalServerError)                                                                                                                                
-    }                                                                                                                                                                                           
+		_, err := io.WriteString(w, `
+		<html>
+		<head><title>Login</title></head>
+		<body>
+			<h1>Welcome!</h1>
+			<a href="/auth/google">Login with Google</a>
+		</body>
+		</html>`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}))
 
 	// Start Google authentication flow
