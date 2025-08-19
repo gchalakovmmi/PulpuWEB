@@ -11,13 +11,12 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", db.WithDB(db.ConnectionDetails{
-		User:     "postgres",
-		Password: "postgres",
-		ServerIP: "localhost",
-		Port:     5432,
-		Schema:   "postgres",
-	}, func(w http.ResponseWriter, r *http.Request, conn *pgx.Conn) {
+	dbConnectionDetails, err := db.GetPostgresConfig()
+	if err != nil {
+			log.Fatalf("Failed to get Postgres config: %v", err)
+	}
+
+	http.HandleFunc("/", db.WithDB(dbConnectionDetails, func(w http.ResponseWriter, r *http.Request, conn *pgx.Conn) {
 		var version string
 		err := conn.QueryRow(context.Background(), "SELECT version()").Scan(&version)
 		if err != nil {
