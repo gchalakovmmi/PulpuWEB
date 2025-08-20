@@ -207,7 +207,7 @@ func GetGoogleAuthConfig() (*Config, error) {
 	return &Config{
 		GoogleKey:       googleKey,
 		GoogleSecret:    googleSecret,
-		CallbackURL:     "http://" + domain + "/auth/google/callback",
+		CallbackURL:     domain + "/auth/google/callback",
 		SecretKey:       []byte(sessionSecret),
 		SessionDuration: sessionDuration,
 	}, nil
