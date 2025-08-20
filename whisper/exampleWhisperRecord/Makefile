@@ -1,0 +1,11 @@
+BINARY := exampleWhisper
+.PHONY: clear run
+
+clear:
+	@clear
+
+run:
+	@echo "Building binary ..."
+	CGO_ENABLED=0 go build -o $(BINARY) .
+	@echo "Runing $(BINARY)"
+	env $$(grep -v '^#' vars.env | xargs) ./$(BINARY)
