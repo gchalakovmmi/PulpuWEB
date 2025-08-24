@@ -5,7 +5,6 @@ import (
     "html/template"
     "log"
     "net/http"
-
     "github.com/gchalakovmmi/PulpuWEB/whisper"
 )
 
@@ -77,6 +76,7 @@ func transcribeHandler(w http.ResponseWriter, r *http.Request) {
         Task:         "transcribe",
         OutputFormat: "json",
         ShouldEncode: true,
+        Model:        "", // Use the model from environment variables
     }
 
     // Send to Whisper service
@@ -106,7 +106,6 @@ func resultHandler(w http.ResponseWriter, r *http.Request) {
     </body>
     </html>
     `
-
     text := r.URL.Query().Get("text")
     t := template.Must(template.New("result").Parse(tmpl))
     t.Execute(w, text)

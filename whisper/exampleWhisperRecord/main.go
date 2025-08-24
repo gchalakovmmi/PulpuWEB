@@ -6,7 +6,6 @@ import (
     "html/template"
     "log"
     "net/http"
-
     "github.com/gchalakovmmi/PulpuWEB/whisper"
 )
 
@@ -43,11 +42,10 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
         <h1>Audio Recorder</h1>
         <button id="recordButton">Record</button>
         <button id="stopButton" disabled>Stop</button>
-        
         <script>
             let mediaRecorder;
             let audioChunks = [];
-
+            
             document.getElementById('recordButton').addEventListener('click', async () => {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
@@ -55,17 +53,17 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
                 
                 document.getElementById('recordButton').disabled = true;
                 document.getElementById('stopButton').disabled = false;
-
+                
                 mediaRecorder.addEventListener('dataavailable', event => {
                     audioChunks.push(event.data);
                 });
             });
-
+            
             document.getElementById('stopButton').addEventListener('click', () => {
                 mediaRecorder.stop();
                 document.getElementById('recordButton').disabled = false;
                 document.getElementById('stopButton').disabled = true;
-
+                
                 mediaRecorder.addEventListener('stop', () => {
                     const audioBlob = new Blob(audioChunks);
                     const formData = new FormData();
@@ -113,6 +111,7 @@ func transcribeHandler(w http.ResponseWriter, r *http.Request) {
         Task:         "transcribe",
         OutputFormat: "json",
         ShouldEncode: true,
+        Model:        "", // Use the model from environment variables
     }
 
     result, err := whisperService.SendToWhisper(req)
@@ -139,7 +138,6 @@ func resultHandler(w http.ResponseWriter, r *http.Request) {
     </body>
     </html>
     `
-
     text := r.URL.Query().Get("text")
     t := template.Must(template.New("result").Parse(tmpl))
     t.Execute(w, text)
