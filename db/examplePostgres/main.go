@@ -26,6 +26,6 @@ func main() {
 		fmt.Fprintf(w, "<h1>Database Connection Successful</h1><pre>%s</pre>", version)
 	}))
 
-	log.Println("Server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server running on :8000")
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
