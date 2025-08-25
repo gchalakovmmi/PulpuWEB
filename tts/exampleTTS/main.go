@@ -6,7 +6,7 @@ import (
     "log"
     "net/http"
     "os"
-
+    
     "github.com/gchalakovmmi/PulpuWEB/tts"
 )
 
@@ -16,7 +16,7 @@ func main() {
     if err != nil {
         log.Fatal("Failed to initialize TTS service:", err)
     }
-
+    
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         html := `
         <!DOCTYPE html>
@@ -37,46 +37,37 @@ func main() {
         w.Header().Set("Content-Type", "text/html")
         fmt.Fprint(w, html)
     })
-
+    
     http.HandleFunc("/tts", func(w http.ResponseWriter, r *http.Request) {
         if r.Method != "POST" {
             http.Redirect(w, r, "/", http.StatusSeeOther)
             return
         }
-
+        
         text := r.FormValue("text")
         if text == "" {
             http.Error(w, "Text is required", http.StatusBadRequest)
             return
         }
-
-        // Create TTS request
-        req := tts.TTSRequest{
-            Text:           text,
-            Voice:          os.Getenv("TTS_VOICE"),
-            ResponseFormat: os.Getenv("TTS_RESPONSE_FORMAT"),
-            Model:          os.Getenv("TTS_MODEL"),
-        }
-
-        if speed := os.Getenv("TTS_SPEED"); speed != "" {
-            fmt.Sscanf(speed, "%f", &req.Speed)
-        }
-
+        
+        // Create TTS request using the service's default configuration
+        req := ttsService.NewTTSRequest()
+        req.Text = text
+        
         // Convert text to speech
         resp, err := ttsService.ConvertTextToSpeech(req)
         if err != nil {
             http.Error(w, "TTS conversion failed: "+err.Error(), http.StatusInternalServerError)
             return
         }
-
+        
         if resp.Error != "" {
             http.Error(w, "TTS error: "+resp.Error, http.StatusInternalServerError)
             return
         }
-
+        
         // Encode audio to base64 for HTML response
         audioBase64 := base64.StdEncoding.EncodeToString(resp.AudioData)
-
         html := fmt.Sprintf(`
         <!DOCTYPE html>
         <html>
@@ -95,16 +86,16 @@ func main() {
         </body>
         </html>
         `, text, audioBase64)
-
+        
         w.Header().Set("Content-Type", "text/html")
         fmt.Fprint(w, html)
     })
-
+    
     port := os.Getenv("PORT")
     if port == "" {
         port = "8080"
     }
-
+    
     log.Printf("Server running on port %s", port)
     log.Fatal(http.ListenAndServe(":"+port, nil))
 }
